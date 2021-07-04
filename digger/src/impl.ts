@@ -1,6 +1,5 @@
 import { IColorModel, IDigger, IFactory, IRefresher } from "./api";
 import { Sys } from "./compat";
-import { Digger } from "./Digger";
 
 export class WebRefresher implements IRefresher {
     private readonly _area: WebDigger;
