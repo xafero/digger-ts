@@ -1,19 +1,3 @@
-import { IColorModel } from "./api";
-
-export class Sys {
-	static requestFocus(): void {
-		// NO-OP
-	}
-
-	static getSpeedParameter(): number {
-		return 66;
-	}
-
-	static getSubmitParameter(): string {
-		return '';
-	}
-
-}
 
 export class ColorModel implements IColorModel {
 
@@ -41,8 +25,3 @@ export class ColorModel implements IColorModel {
 	}
 }
 
-export class Threading {
-	static sleep(millis: number): Promise<void> {
-		return new Promise(resolve => setTimeout(resolve, millis))
-	}
-}

@@ -1,29 +1,3 @@
-import { IColorModel, IDigger, IFactory, IRefresher } from "./api";
-import { Sys } from "./compat";
-
-export class WebRefresher implements IRefresher {
-    private readonly _area: WebDigger;
-    private readonly _canvas: HTMLCanvasElement;
-    private readonly _model: IColorModel;
-
-    constructor(area: WebDigger, model: IColorModel) {
-        this._area = area;
-        this._canvas = <HTMLCanvasElement>document.getElementById("screen");
-        this._model = model;
-    }
-
-    public getModel(): IColorModel {
-        return this._model;
-    }
-
-    public newPixels(x: number, y: number, w: number, h: number): void {
-        this._area.DrawOnCanvas(this._canvas);
-    }
-
-    public newPixelsAll(): void {
-        this._area.DrawOnCanvas(this._canvas);
-    }
-}
 
 export class WebDigger extends Sys implements IFactory {
     private _setup: boolean;
@@ -120,27 +94,3 @@ export class WebDigger extends Sys implements IFactory {
     }
 }
 
-export class Keyboard {
-    public static ConvertToLegacy(netCode: string): number {
-        switch (netCode) {
-            case "ArrowLeft":
-                return 1006;
-            case "ArrowRight":
-                return 1007;
-            case "ArrowUp":
-                return 1004;
-            case "ArrowDown":
-                return 1005;
-            case "F2":
-                return 1008;
-            case "F9":
-                return 1021;
-            case "+":
-                return 1031;
-            case "-":
-                return 1032;
-            default:
-                return netCode.charCodeAt(0);
-        }
-    }
-}
