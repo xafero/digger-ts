@@ -1,5 +1,5 @@
 import { Digger } from "./Digger";
-import { WebDigger } from "./impl";
+import { WebDigger } from "./WebDigger";
 
 function boot() {
 

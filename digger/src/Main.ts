@@ -1,6 +1,6 @@
-import { Threading } from "./compat";
 import { Digger } from "./Digger";
 import { IntMath } from "./IntMath";
+import { Threading } from "./Threading";
 import { _game } from "./_game";
 
 export class Main {

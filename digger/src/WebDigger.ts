@@ -1,3 +1,7 @@
+import { IColorModel, IDigger, IFactory, IRefresher } from "./api";
+import { Keyboard } from "./Keyboard";
+import { Sys } from "./Sys";
+import { WebRefresher } from "./WebRefresher";
 
 export class WebDigger extends Sys implements IFactory {
     private _setup: boolean;

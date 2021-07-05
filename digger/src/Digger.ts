@@ -3,7 +3,7 @@ It was ported from C almost mechanically! */
 
 import { IDigger, IPc, IFactory } from "./api";
 import { Bags } from "./Bags";
-import { ColorModel, Sys, Threading } from "./compat";
+import { ColorModel } from "./ColorModel";
 import { Drawing } from "./Drawing";
 import { Input } from "./Input";
 import { IntMath } from "./IntMath";
@@ -13,6 +13,8 @@ import { Pc } from "./Pc";
 import { Scores } from "./Scores";
 import { Sound } from "./Sound";
 import { Sprite } from "./Sprite";
+import { Sys } from "./Sys";
+import { Threading } from "./Threading";
 
 export class Digger implements IDigger {
 

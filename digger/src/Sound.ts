@@ -1,8 +1,8 @@
 // sound has not been ported yet
 
-import { Threading } from "./compat";
 import { Digger } from "./Digger";
 import { IntMath } from "./IntMath";
+import { Threading } from "./Threading";
 
 export class Sound {
 

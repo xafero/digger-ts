@@ -1,5 +1,5 @@
-import { Threading } from "./compat";
 import { Digger } from "./Digger";
+import { Threading } from "./Threading";
 
 export class Scores {
 
