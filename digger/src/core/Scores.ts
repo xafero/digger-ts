@@ -1,5 +1,5 @@
+import { Threading } from "../web/Threading";
 import { Digger } from "./Digger";
-import { Threading } from "./Threading";
 
 export class Scores {
 

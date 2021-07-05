@@ -1,4 +1,7 @@
-import { IColorModel, IDigger, IFactory, IRefresher } from "./api";
+import { IColorModel } from "../api/IColorModel";
+import { IDigger } from "../api/IDigger";
+import { IFactory } from "../api/IFactory";
+import { IRefresher } from "../api/IRefresher";
 import { Keyboard } from "./Keyboard";
 import { Sys } from "./Sys";
 import { WebRefresher } from "./WebRefresher";

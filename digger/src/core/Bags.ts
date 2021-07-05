@@ -1,5 +1,5 @@
 import { Digger } from "./Digger";
-import { IntMath } from "./IntMath";
+import { IntMath } from "../web/IntMath";
 import { _bag } from "./_bag";
 
 export class Bags {

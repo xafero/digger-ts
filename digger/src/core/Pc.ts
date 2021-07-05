@@ -1,8 +1,9 @@
+import { IPc } from "../api/IPc";
+import { IRefresher } from "../api/IRefresher";
+import { IntMath } from "../web/IntMath";
 import { alpha } from "./alpha";
 import { cgagrafx } from "./cgagrafx";
 import { Digger } from "./Digger";
-import { IPc, IRefresher } from "./api";
-import { IntMath } from "./IntMath";
 
 export class Pc implements IPc {
 

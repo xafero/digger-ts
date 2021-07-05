@@ -1,4 +1,4 @@
-import { Digger } from "./Digger";
+import { Digger } from "../core/Digger";
 import { WebDigger } from "./WebDigger";
 
 function boot() {

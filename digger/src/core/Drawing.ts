@@ -1,5 +1,5 @@
+import { IntMath } from "../web/IntMath";
 import { Digger } from "./Digger";
-import { IntMath } from "./IntMath";
 
 export class Drawing {
 

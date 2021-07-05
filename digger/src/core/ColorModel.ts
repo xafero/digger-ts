@@ -1,4 +1,4 @@
-import { IColorModel } from "./api";
+import { IColorModel } from "../api/IColorModel";
 
 export class ColorModel implements IColorModel {
 

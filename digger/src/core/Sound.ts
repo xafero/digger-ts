@@ -1,8 +1,8 @@
 // sound has not been ported yet
 
+import { IntMath } from "../web/IntMath";
+import { Threading } from "../web/Threading";
 import { Digger } from "./Digger";
-import { IntMath } from "./IntMath";
-import { Threading } from "./Threading";
 
 export class Sound {
 

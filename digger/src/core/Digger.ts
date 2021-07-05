@@ -1,20 +1,22 @@
 /* WARNING! This code is ugly and highly non-object-oriented.
 It was ported from C almost mechanically! */
 
-import { IDigger, IPc, IFactory } from "./api";
+import { IDigger } from "../api/IDigger";
+import { IFactory } from "../api/IFactory";
+import { IPc } from "../api/IPc";
+import { IntMath } from "../web/IntMath";
+import { Sys } from "../web/Sys";
+import { Threading } from "../web/Threading";
 import { Bags } from "./Bags";
 import { ColorModel } from "./ColorModel";
 import { Drawing } from "./Drawing";
 import { Input } from "./Input";
-import { IntMath } from "./IntMath";
 import { Main } from "./Main";
 import { Monster } from "./Monster";
 import { Pc } from "./Pc";
 import { Scores } from "./Scores";
 import { Sound } from "./Sound";
 import { Sprite } from "./Sprite";
-import { Sys } from "./Sys";
-import { Threading } from "./Threading";
 
 export class Digger implements IDigger {
 

@@ -1,4 +1,5 @@
-import { IColorModel, IRefresher } from "./api";
+import { IColorModel } from "../api/IColorModel";
+import { IRefresher } from "../api/IRefresher";
 import { WebDigger } from "./WebDigger";
 
 export class WebRefresher implements IRefresher {

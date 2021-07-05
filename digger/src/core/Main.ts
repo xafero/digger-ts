@@ -1,6 +1,6 @@
+import { IntMath } from "../web/IntMath";
+import { Threading } from "../web/Threading";
 import { Digger } from "./Digger";
-import { IntMath } from "./IntMath";
-import { Threading } from "./Threading";
 import { _game } from "./_game";
 
 export class Main {
