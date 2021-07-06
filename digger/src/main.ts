@@ -9,12 +9,12 @@ declare function log(text: string): void;
 var hello: WebDigger;
 
 export function doKeyDown(code: string, key: string, keyCode: i32): void {
-  log(`got KeyDown: ${code} ${key} ${keyCode}`);
+  // logx(`got KeyDown: ${code} ${key} ${keyCode}`);
   hello.KeyDown(code, keyCode);
 }
 
 export function doKeyUp(code: string, key: string, keyCode: i32): void {
-  log(`got KeyUp: ${code} ${key} ${keyCode}`);
+  // logx(`got KeyUp: ${code} ${key} ${keyCode}`);
   hello.KeyUp(code, keyCode);
 }
 
