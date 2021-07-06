@@ -3,42 +3,30 @@ import { IDigger } from "../api/IDigger";
 import { IFactory } from "../api/IFactory";
 import { IRefresher } from "../api/IRefresher";
 import { Keyboard } from "./Keyboard";
-import { Sys } from "./Sys";
 import { WebRefresher } from "./WebRefresher";
 
-export class WebDigger extends Sys implements IFactory {
-    private _setup: boolean;
-    public _digger: (IDigger | null);
+export class WebDigger implements IFactory {
+    public _digger: IDigger;
+    private _sleep: (ms: i64) => void;
+    private _sendImg: (array: Uint8ClampedArray) => void;
 
-    constructor(digger: (IDigger | null)) {
-        super();
-        this._setup = false;
+    constructor(digger: IDigger, sleep: (ms: i64) => void, send: (array: Uint8ClampedArray) => void) {
         this._digger = digger;
+        this._sleep = sleep;
+        this._sendImg = send;
     }
 
-    private static toHexColor(cr: number, cg: number, cb: number) {
-        let r = cr.toString(16);
-        let g = cg.toString(16);
-        let b = cb.toString(16);
-        if (r.length == 1)
-            r = "0" + r;
-        if (g.length == 1)
-            g = "0" + g;
-        if (b.length == 1)
-            b = "0" + b;
-        return "#" + r + g + b;
+    SendImage(array: Uint8ClampedArray): void {
+        this._sendImg(array);
     }
 
-    public DrawOnCanvas(e: HTMLCanvasElement): boolean {
-        const ctx: (CanvasRenderingContext2D | null) = e.getContext("2d");
-        if (ctx == null)
-            return false;
-        return this.OnDrawn(ctx);
+    Sleep(ms: i64): void {
+        this._sleep(ms);
     }
 
-    protected OnDrawn(g: CanvasRenderingContext2D): boolean {
+    public DrawOnCanvas(): Uint8ClampedArray {
         if (this._digger == null)
-            return false;
+            return new Uint8ClampedArray(0);
 
         const pc = this._digger.GetPc();
 
@@ -47,57 +35,55 @@ export class WebDigger extends Sys implements IFactory {
         const data = pc.GetPixels();
         const source = pc.GetCurrentSource();
         if (!source)
-            return false;
+            return new Uint8ClampedArray(0);
         const model = source.getModel();
 
-        const shift = 1;
+        const rgba: Uint8ClampedArray = new Uint8ClampedArray(w * h * 4);
 
         for (let x = 0; x < w; x++) {
             for (let y = 0; y < h; y++) {
-                const arrayIndex = y * w + x;
-                const [sr, sg, sb] = model.GetColor(data[arrayIndex]);
-                g.fillStyle = WebDigger.toHexColor(sr, sg, sb);
-                g.fillRect(x + shift, y + shift, 1, 1);
+                const arrayIndex = (y * w + x);
+                const sxx: i32[] = model.GetColor(data[arrayIndex]);
+                const pixelIndex = arrayIndex * 4;
+                rgba[pixelIndex + 0] = sxx[0];
+                rgba[pixelIndex + 1] = sxx[1];
+                rgba[pixelIndex + 2] = sxx[2];
+                rgba[pixelIndex + 3] = 255;
             }
         }
 
-        if (!this._setup) {
-            this._setup = true;
-            g.scale(4, 4);
-        }
-
-        return false;
+        return rgba;
     }
 
-    public KeyUp(key: string): void {
+    public KeyUp(key: string, n: i32): void {
         if (!this._digger)
             return;
-        const num = Keyboard.ConvertToLegacy(key);
+        const num = Keyboard.ConvertToLegacy(key, n);
         if (num >= 0)
             this._digger.keyUp(num);
     }
 
-    public KeyDown(key: string): void {
+    public KeyDown(key: string, n: i32): void {
         if (!this._digger)
             return;
-        const num = Keyboard.ConvertToLegacy(key);
+        const num = Keyboard.ConvertToLegacy(key, n);
         if (num >= 0)
             this._digger.keyDown(num);
     }
 
-    CreateRefresher(digger: IDigger, model: IColorModel): IRefresher {
-        return new WebRefresher(this, model);
+    CreateRefresher(digger: IDigger, model: IColorModel, factory: IFactory): IRefresher {
+        return new WebRefresher(this, model, factory);
     }
 
     GetSubmitParameter(): string {
         return "";
     }
 
-    GetSpeedParameter(): number {
+    GetSpeedParameter(): i32 {
         return 66;
     }
 
     RequestFocus(): void {
+        // NO-OP
     }
 }
-

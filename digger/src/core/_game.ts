@@ -1,8 +1,8 @@
 
 export class _game {
 
-  lives: number = 0;
-  level: number = 0;
+  lives: i32 = 0;
+  level: i32 = 0;
 
   dead: boolean = false;
   levdone: boolean = false;

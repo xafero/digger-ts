@@ -1,11 +1,14 @@
+import { Pc } from "../core/Pc";
 import { IRefresher } from "./IRefresher";
 
 export interface IPc {
-    GetWidth(): number;
+    P(): Pc;
 
-    GetHeight(): number;
+    GetWidth(): i32;
 
-    GetPixels(): number[];
+    GetHeight(): i32;
 
-    GetCurrentSource(): (IRefresher | null);
+    GetPixels(): i32[];
+
+    GetCurrentSource(): IRefresher;
 }

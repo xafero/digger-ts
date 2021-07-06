@@ -1,4 +1,4 @@
 
 export interface IColorModel {
-    GetColor(index: number): [number, number, number];
+    GetColor(index: i32): i32[];
 }

@@ -1,20 +1,20 @@
 
 export class _monster {
 
-  x: number = 0;
-  y: number = 0;
-  h: number = 0;
-  v: number = 0;
-  xr: number = 0;
-  yr: number = 0;
-  dir: number = 0;
-  hdir: number = 0;
-  t: number = 0;
-  hnt: number = 0;
-  death: number = 0;
-  bag: number = 0;
-  dtime: number = 0;
-  stime: number = 0;
+  x: i32 = 0;
+  y: i32 = 0;
+  h: i32 = 0;
+  v: i32 = 0;
+  xr: i32 = 0;
+  yr: i32 = 0;
+  dir: i32 = 0;
+  hdir: i32 = 0;
+  t: i32 = 0;
+  hnt: i32 = 0;
+  death: i32 = 0;
+  bag: i32 = 0;
+  dtime: i32 = 0;
+  stime: i32 = 0;
 
   flag: boolean = false;
   nob: boolean = false;

@@ -2,7 +2,7 @@
 export interface ISystem {
     GetSubmitParameter(): string;
 
-    GetSpeedParameter(): number;
+    GetSpeedParameter(): i32;
 
     RequestFocus(): void;
 }

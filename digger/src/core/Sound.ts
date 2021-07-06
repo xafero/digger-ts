@@ -1,98 +1,100 @@
 // sound has not been ported yet
 
+import { IDigger } from "../api/IDigger";
+import { IFactory } from "../api/IFactory";
 import { IntMath } from "../web/IntMath";
-import { Threading } from "../web/Threading";
 import { Digger } from "./Digger";
 
 export class Sound {
 
-	dig: Digger;
+	dig: IDigger;
+	factory: IFactory;
 
-	wavetype = 0;
-	t2val = 0;
-	t0val = 0;
-	musvol = 0;
-	spkrmode = 0;
-	timerrate = 0x7d0;
-	timercount = 0;
-	pulsewidth = 1;
-	volume = 0;
+	wavetype: i32 = 0;
+	t2val: i32 = 0;
+	t0val: i32 = 0;
+	musvol: i32 = 0;
+	spkrmode: i32 = 0;
+	timerrate: i32 = 0x7d0;
+	timercount: i32 = 0;
+	pulsewidth: i32 = 1;
+	volume: i32 = 0;
 
-	timerclock = 0;		// sint3
+	timerclock: i32 = 0;		// sint3
 
-	soundflag = true;
-	musicflag = true;
+	soundflag: boolean = true;
+	musicflag: boolean = true;
 
-	sndflag = false;
-	soundpausedflag = false;
+	sndflag: boolean = false;
+	soundpausedflag: boolean = false;
 
-	soundlevdoneflag = false;
-	nljpointer = 0;
-	nljnoteduration = 0;
+	soundlevdoneflag: boolean = false;
+	nljpointer: i32 = 0;
+	nljnoteduration: i32 = 0;
 
-	newlevjingle: number[] = [0x8e8, 0x712, 0x5f2, 0x7f0, 0x6ac, 0x54c, 0x712, 0x5f2, 0x4b8, 0x474, 0x474];	// [11]
+	newlevjingle: i32[] = [0x8e8, 0x712, 0x5f2, 0x7f0, 0x6ac, 0x54c, 0x712, 0x5f2, 0x4b8, 0x474, 0x474];	// [11]
 
-	soundfallflag = false;
-	soundfallf = false;
-	soundfallvalue = 0;
-	soundfalln = 0;
+	soundfallflag: boolean = false;
+	soundfallf: boolean = false;
+	soundfallvalue: i32 = 0;
+	soundfalln: i32 = 0;
 
-	soundbreakflag = false;
-	soundbreakduration = 0;
-	soundbreakvalue = 0;
+	soundbreakflag: boolean = false;
+	soundbreakduration: i32 = 0;
+	soundbreakvalue: i32 = 0;
 
-	soundwobbleflag = false;
-	soundwobblen = 0;
+	soundwobbleflag: boolean = false;
+	soundwobblen: i32 = 0;
 
-	soundfireflag = false;
-	soundfirevalue = 0;
-	soundfiren = 0;
+	soundfireflag: boolean = false;
+	soundfirevalue: i32 = 0;
+	soundfiren: i32 = 0;
 
-	soundexplodeflag = false;
-	soundexplodevalue = 0;
-	soundexplodeduration = 0;
+	soundexplodeflag: boolean = false;
+	soundexplodevalue: i32 = 0;
+	soundexplodeduration: i32 = 0;
 
-	soundbonusflag = false;
-	soundbonusn = 0;
+	soundbonusflag: boolean = false;
+	soundbonusn: i32 = 0;
 
-	soundemflag = false;
+	soundemflag: boolean = false;
 
-	soundemeraldflag = false;
-	soundemeraldduration = 0;
-	emerfreq = 0;
-	soundemeraldn = 0;
+	soundemeraldflag: boolean = false;
+	soundemeraldduration: i32 = 0;
+	emerfreq: i32 = 0;
+	soundemeraldn: i32 = 0;
 
-	soundgoldflag = false;
-	soundgoldf = false;
-	soundgoldvalue1 = 0;
-	soundgoldvalue2 = 0;
-	soundgoldduration = 0;
+	soundgoldflag: boolean = false;
+	soundgoldf: boolean = false;
+	soundgoldvalue1: i32 = 0;
+	soundgoldvalue2: i32 = 0;
+	soundgoldduration: i32 = 0;
 
-	soundeatmflag = false;
-	soundeatmvalue = 0;
-	soundeatmduration = 0;
-	soundeatmn = 0;
+	soundeatmflag: boolean = false;
+	soundeatmvalue: i32 = 0;
+	soundeatmduration: i32 = 0;
+	soundeatmn: i32 = 0;
 
-	soundddieflag = false;
-	soundddien = 0;
-	soundddievalue = 0;
+	soundddieflag: boolean = false;
+	soundddien: i32 = 0;
+	soundddievalue: i32 = 0;
 
-	sound1upflag = false;
-	sound1upduration = 0;
+	sound1upflag: boolean = false;
+	sound1upduration: i32 = 0;
 
-	musicplaying = false;
-	musicp = 0;
-	tuneno = 0;
-	noteduration = 0;
-	notevalue = 0;
-	musicmaxvol = 0;
-	musicattackrate = 0;
-	musicsustainlevel = 0;
-	musicdecayrate = 0;
-	musicnotewidth = 0;
-	musicreleaserate = 0;
-	musicstage = 0;
-	musicn = 0;
+	musicplaying: boolean = false;
+	musicp: i32 = 0;
+	tuneno: i32 = 0;
+	noteduration: i32 = 0;
+	notevalue: i32 = 0;
+	musicmaxvol: i32 = 0;
+	musicattackrate: i32 = 0;
+	musicsustainlevel: i32 = 0;
+	musicdecayrate: i32 = 0;
+	musicnotewidth: i32 = 0;
+	musicreleaserate: i32 = 0;
+	musicstage: i32 = 0;
+	musicn: i32 = 0;
 
 	/*int bonusjingle[]={	// [321]
 	  0x11d1,2,0x11d1,2,0x11d1,4,0x11d1,2,0x11d1,2,0x11d1,4,0x11d1,2,0x11d1,2,
@@ -144,12 +146,13 @@ export class Sound {
 	  0x7d00,16,0x7d00,16,0x7d00,16,0x7d00,16,0x7d00,16,0x7d00,16,0x7d00,16,
 	  0x7d00,16,0x7d00,16,0x7d00,16,0x7d64};
 	*/
-	soundt0flag = false;
+	soundt0flag: boolean = false;
 
-	int8flag = false;
+	int8flag: boolean = false;
 
-	constructor(d: Digger) {
+	constructor(d: IDigger, f: IFactory) {
 		this.dig = d;
+		this.factory = f;
 	}
 
 	initsound(): void {
@@ -175,7 +178,7 @@ export class Sound {
 		// added by me...
 	}
 
-	music(tune: number): void {
+	music(tune: i32): void {
 		this.tuneno = tune;
 		this.musicp = 0;
 		this.noteduration = 0;
@@ -322,7 +325,7 @@ export class Sound {
 		}
 	}
 
-	sett2val(t2v: number): void {
+	sett2val(t2v: i32): void {
 		//  if (sndflag)
 		//	timer2(t2v);
 	}
@@ -453,7 +456,7 @@ export class Sound {
 		this.soundemflag = true;
 	}
 
-	soundemerald(emocttime: number): void {
+	soundemerald(emocttime: i32): void {
 		if (emocttime != 0) {
 			switch (this.emerfreq) {
 				case 0x8e8:
@@ -476,7 +479,7 @@ export class Sound {
 					break;
 				case 0x4b8:
 					this.emerfreq = 0x474;
-					this.dig.Scores.scoreoctave();
+					this.dig.GetScores().scoreoctave();
 					break;
 				case 0x474:
 					this.emerfreq = 0x8e8;
@@ -583,7 +586,7 @@ export class Sound {
 			if (this.soundfiren == 1) {
 				this.soundfiren = 0;
 				this.soundfirevalue += IntMath.div(this.soundfirevalue, 55);
-				this.t2val = this.soundfirevalue + this.dig.Main.randno(this.soundfirevalue >> 3);
+				this.t2val = this.soundfirevalue + this.dig.GetMain().randno(this.soundfirevalue >> 3);
 				if (this.soundfirevalue > 30000)
 					this.soundfireoff();
 			}
@@ -659,8 +662,8 @@ export class Sound {
 		}
 	}
 
-	async soundlevdone(): Promise<void> {
-		await Threading.sleep(1000);
+	soundlevdone(): void {
+		this.factory.Sleep(1000);
 
 		/*  int timer=0;
 		  soundstop();
@@ -679,7 +682,7 @@ export class Sound {
 		this.soundlevdoneflag = this.soundpausedflag = false;
 	}
 
-	async soundlevdoneupdate(): Promise<void> {
+	soundlevdoneupdate(): void {
 		if (this.sndflag) {
 			if (this.nljpointer < 11)
 				this.t2val = this.newlevjingle[this.nljpointer];
@@ -694,7 +697,7 @@ export class Sound {
 				this.nljnoteduration = 20;
 				this.nljpointer++;
 				if (this.nljpointer > 10)
-					await this.soundlevdoneoff();
+					this.soundlevdoneoff();
 			}
 		}
 		else {

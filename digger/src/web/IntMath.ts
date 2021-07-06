@@ -1,6 +1,7 @@
 
 export class IntMath {
-    static div(a: number, b: number): number {
-        return ~~(a / b);
+    static div(a: i32, b: i32): i32 {
+        // return ~~(a / b);
+        return (a / b);
     }
 }

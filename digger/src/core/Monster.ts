@@ -1,43 +1,41 @@
+import { IDigger } from "../api/IDigger";
 import { IntMath } from "../web/IntMath";
 import { Digger } from "./Digger";
 import { _monster } from "./_monster";
 
 export class Monster {
 
-	dig: Digger;
+	dig: IDigger;
 
 	mondat: _monster[] = [new _monster(), new _monster(), new _monster(), new _monster(), new _monster(), new _monster()];	// [6]
 
-	nextmonster = 0;
-	totalmonsters = 0;
-	maxmononscr = 0;
-	nextmontime = 0;
-	mongaptime = 0;
+	nextmonster: i32 = 0;
+	totalmonsters: i32 = 0;
+	maxmononscr: i32 = 0;
+	nextmontime: i32 = 0;
+	mongaptime: i32 = 0;
 
-	unbonusflag = false;
-	mongotgold = false;
+	unbonusflag: boolean = false;
+	mongotgold: boolean = false;
 
-	constructor(d: Digger) {
+	constructor(d: IDigger) {
 		this.dig = d;
 	}
 
-	checkcoincide(mon: number, bits: number): void {
-		let m, b;
-		for (m = 0, b = 256; m < 6; m++, b <<= 1)
+	checkcoincide(mon: i32, bits: i32): void {
+		for (let m = 0, b = 256; m < 6; m++, b <<= 1)
 			if (((bits & b) != 0) && (this.mondat[mon].dir == this.mondat[m].dir) && (this.mondat[m].stime == 0) && (this.mondat[mon].stime == 0))
-				this.mondat[m].dir = this.dig.reversedir(this.mondat[m].dir);
+				this.mondat[m].dir = this.dig.D().reversedir(this.mondat[m].dir);
 	}
 
-	checkmonscared(h: number): void {
-		let m;
-		for (m = 0; m < 6; m++)
+	checkmonscared(h: i32): void {
+		for (let m = 0; m < 6; m++)
 			if ((h == this.mondat[m].h) && (this.mondat[m].dir == 2))
 				this.mondat[m].dir = 6;
 	}
 
 	createmonster(): void {
-		let i;
-		for (i = 0; i < 6; i++)
+		for (let i = 0; i < 6; i++)
 			if (!this.mondat[i].flag) {
 				this.mondat[i].flag = true;
 				this.mondat[i].alive = true;
@@ -55,28 +53,27 @@ export class Monster {
 				this.nextmonster++;
 				this.nextmontime = this.mongaptime;
 				this.mondat[i].stime = 5;
-				this.dig.Sprite.movedrawspr(i + 8, this.mondat[i].x, this.mondat[i].y);
+				this.dig.GetSprite().movedrawspr(i + 8, this.mondat[i].x, this.mondat[i].y);
 				break;
 			}
 	}
 
 	domonsters(): void {
-		let i;
 		if (this.nextmontime > 0)
 			this.nextmontime--;
 		else {
-			if (this.nextmonster < this.totalmonsters && this.nmononscr() < this.maxmononscr && this.dig.digonscr &&
-				!this.dig.bonusmode)
+			if (this.nextmonster < this.totalmonsters && this.nmononscr() < this.maxmononscr && this.dig.D().digonscr &&
+				!this.dig.D().bonusmode)
 				this.createmonster();
 			if (this.unbonusflag && this.nextmonster == this.totalmonsters && this.nextmontime == 0)
-				if (this.dig.digonscr) {
+				if (this.dig.D().digonscr) {
 					this.unbonusflag = false;
-					this.dig.createbonus();
+					this.dig.D().createbonus();
 				}
 		}
-		for (i = 0; i < 6; i++)
+		for (let i = 0; i < 6; i++)
 			if (this.mondat[i].flag) {
-				if (this.mondat[i].hnt > 10 - this.dig.Main.levof10()) {
+				if (this.mondat[i].hnt > 10 - this.dig.GetMain().levof10()) {
 					if (this.mondat[i].nob) {
 						this.mondat[i].nob = false;
 						this.mondat[i].hnt = 0;
@@ -85,7 +82,7 @@ export class Monster {
 				if (this.mondat[i].alive)
 					if (this.mondat[i].t == 0) {
 						this.monai(i);
-						if (this.dig.Main.randno(15 - this.dig.Main.levof10()) == 0 && this.mondat[i].nob)
+						if (this.dig.GetMain().randno(15 - this.dig.GetMain().levof10()) == 0 && this.mondat[i].nob)
 							this.monai(i);
 					}
 					else
@@ -96,13 +93,12 @@ export class Monster {
 	}
 
 	erasemonsters(): void {
-		let i;
-		for (i = 0; i < 6; i++)
+		for (let i = 0; i < 6; i++)
 			if (this.mondat[i].flag)
-				this.dig.Sprite.erasespr(i + 8);
+				this.dig.GetSprite().erasespr(i + 8);
 	}
 
-	fieldclear(dir: number, x: number, y: number): boolean {
+	fieldclear(dir: i32, x: i32, y: i32): boolean {
 		switch (dir) {
 			case 0:
 				if (x < 14)
@@ -131,35 +127,32 @@ export class Monster {
 		return false;
 	}
 
-	getfield(x: number, y: number): number {
-		return this.dig.Drawing.field[y * 15 + x];
+	getfield(x: i32, y: i32): i32 {
+		return this.dig.GetDrawing().field[y * 15 + x];
 	}
 
-	incmont(n: number): void {
-		let m;
+	incmont(n: i32): void {
 		if (n > 6)
 			n = 6;
-		for (m = 1; m < n; m++)
+		for (let m = 1; m < n; m++)
 			this.mondat[m].t++;
 	}
 
-	incpenalties(bits: number): void {
-		let m, b;
-		for (m = 0, b = 256; m < 6; m++, b <<= 1) {
+	incpenalties(bits: i32): void {
+		for (let m = 0, b = 256; m < 6; m++, b <<= 1) {
 			if ((bits & b) != 0)
-				this.dig.Main.incpenalty();
+				this.dig.GetMain().incpenalty();
 			b <<= 1;
 		}
 	}
 
 	initmonsters(): void {
-		let i;
-		for (i = 0; i < 6; i++)
+		for (let i = 0; i < 6; i++)
 			this.mondat[i].flag = false;
 		this.nextmonster = 0;
-		this.mongaptime = 45 - (this.dig.Main.levof10() << 1);
-		this.totalmonsters = this.dig.Main.levof10() + 5;
-		switch (this.dig.Main.levof10()) {
+		this.mongaptime = 45 - (this.dig.GetMain().levof10() << 1);
+		this.totalmonsters = this.dig.GetMain().levof10() + 5;
+		switch (this.dig.GetMain().levof10()) {
 			case 1:
 				this.maxmononscr = 3;
 				break;
@@ -180,18 +173,18 @@ export class Monster {
 		this.unbonusflag = true;
 	}
 
-	killmon(mon: number): void {
+	killmon(mon: i32): void {
 		if (this.mondat[mon].flag) {
 			this.mondat[mon].flag = this.mondat[mon].alive = false;
-			this.dig.Sprite.erasespr(mon + 8);
-			if (this.dig.bonusmode)
+			this.dig.GetSprite().erasespr(mon + 8);
+			if (this.dig.D().bonusmode)
 				this.totalmonsters++;
 		}
 	}
 
-	killmonsters(bits: number): number {
-		let m, b, n = 0;
-		for (m = 0, b = 256; m < 6; m++, b <<= 1)
+	killmonsters(bits: i32): i32 {
+		let n = 0;
+		for (let m = 0, b = 256; m < 6; m++, b <<= 1)
 			if ((bits & b) != 0) {
 				this.killmon(m);
 				n++;
@@ -199,8 +192,8 @@ export class Monster {
 		return n;
 	}
 
-	monai(mon: number): void {
-		let dir, mdirp1, mdirp2, mdirp3, mdirp4, t;
+	monai(mon: i32): void {
+		let dir = 0, mdirp1 = 0, mdirp2 = 0, mdirp3 = 0, mdirp4 = 0, t = 0;
 		let push: boolean;
 		const monox = this.mondat[mon].x;
 		const monoy = this.mondat[mon].y;
@@ -210,7 +203,7 @@ export class Monster {
 
 			/* Turn hobbin back into nobbin if it's had its time */
 
-			if (this.mondat[mon].hnt > 30 + (this.dig.Main.levof10() << 1))
+			if (this.mondat[mon].hnt > 30 + (this.dig.GetMain().levof10() << 1))
 				if (!this.mondat[mon].nob) {
 					this.mondat[mon].hnt = 0;
 					this.mondat[mon].nob = true;
@@ -218,22 +211,22 @@ export class Monster {
 
 			/* Set up monster direction properties to chase dig */
 
-			if (Math.abs(this.dig.diggery - this.mondat[mon].y) > Math.abs(this.dig.diggerx - this.mondat[mon].x)) {
-				if (this.dig.diggery < this.mondat[mon].y) { mdirp1 = 2; mdirp4 = 6; }
+			if (Math.abs(this.dig.D().diggery - this.mondat[mon].y) > Math.abs(this.dig.D().diggerx - this.mondat[mon].x)) {
+				if (this.dig.D().diggery < this.mondat[mon].y) { mdirp1 = 2; mdirp4 = 6; }
 				else { mdirp1 = 6; mdirp4 = 2; }
-				if (this.dig.diggerx < this.mondat[mon].x) { mdirp2 = 4; mdirp3 = 0; }
+				if (this.dig.D().diggerx < this.mondat[mon].x) { mdirp2 = 4; mdirp3 = 0; }
 				else { mdirp2 = 0; mdirp3 = 4; }
 			}
 			else {
-				if (this.dig.diggerx < this.mondat[mon].x) { mdirp1 = 4; mdirp4 = 0; }
+				if (this.dig.D().diggerx < this.mondat[mon].x) { mdirp1 = 4; mdirp4 = 0; }
 				else { mdirp1 = 0; mdirp4 = 4; }
-				if (this.dig.diggery < this.mondat[mon].y) { mdirp2 = 2; mdirp3 = 6; }
+				if (this.dig.D().diggery < this.mondat[mon].y) { mdirp2 = 2; mdirp3 = 6; }
 				else { mdirp2 = 6; mdirp3 = 2; }
 			}
 
 			/* In bonus mode, run away from digger */
 
-			if (this.dig.bonusmode) {
+			if (this.dig.D().bonusmode) {
 				t = mdirp1; mdirp1 = mdirp4; mdirp4 = t;
 				t = mdirp2; mdirp2 = mdirp3; mdirp3 = t;
 			}
@@ -241,7 +234,7 @@ export class Monster {
 			/* Adjust priorities so that monsters don't reverse direction unless they
 			   really have to */
 
-			dir = this.dig.reversedir(this.mondat[mon].dir);
+			dir = this.dig.D().reversedir(this.mondat[mon].dir);
 			if (dir == mdirp1) {
 				mdirp1 = mdirp2;
 				mdirp2 = mdirp3;
@@ -260,7 +253,7 @@ export class Monster {
 
 			/* Introduce a randno element on levels <6 : occasionally swap p1 and p3 */
 
-			if (this.dig.Main.randno(this.dig.Main.levof10() + 5) == 1 && this.dig.Main.levof10() < 6) {
+			if (this.dig.GetMain().randno(this.dig.GetMain().levof10() + 5) == 1 && this.dig.GetMain().levof10() < 6) {
 				t = mdirp1;
 				mdirp1 = mdirp3;
 				mdirp3 = t;
@@ -311,29 +304,29 @@ export class Monster {
 		/* Hobbins digger */
 
 		if (!this.mondat[mon].nob)
-			this.dig.Drawing.eatfield(this.mondat[mon].x, this.mondat[mon].y, this.mondat[mon].dir);
+			this.dig.GetDrawing().eatfield(this.mondat[mon].x, this.mondat[mon].y, this.mondat[mon].dir);
 
 		/* (Draw new tunnels) and move monster */
 
 		switch (this.mondat[mon].dir) {
 			case 0:
 				if (!this.mondat[mon].nob)
-					this.dig.Drawing.drawrightblob(this.mondat[mon].x, this.mondat[mon].y);
+					this.dig.GetDrawing().drawrightblob(this.mondat[mon].x, this.mondat[mon].y);
 				this.mondat[mon].x += 4;
 				break;
 			case 4:
 				if (!this.mondat[mon].nob)
-					this.dig.Drawing.drawleftblob(this.mondat[mon].x, this.mondat[mon].y);
+					this.dig.GetDrawing().drawleftblob(this.mondat[mon].x, this.mondat[mon].y);
 				this.mondat[mon].x -= 4;
 				break;
 			case 2:
 				if (!this.mondat[mon].nob)
-					this.dig.Drawing.drawtopblob(this.mondat[mon].x, this.mondat[mon].y);
+					this.dig.GetDrawing().drawtopblob(this.mondat[mon].x, this.mondat[mon].y);
 				this.mondat[mon].y -= 3;
 				break;
 			case 6:
 				if (!this.mondat[mon].nob)
-					this.dig.Drawing.drawbottomblob(this.mondat[mon].x, this.mondat[mon].y);
+					this.dig.GetDrawing().drawbottomblob(this.mondat[mon].x, this.mondat[mon].y);
 				this.mondat[mon].y += 3;
 				break;
 		}
@@ -341,11 +334,11 @@ export class Monster {
 		/* Hobbins can eat emeralds */
 
 		if (!this.mondat[mon].nob)
-			this.dig.hitemerald(IntMath.div((this.mondat[mon].x - 12), 20), IntMath.div((this.mondat[mon].y - 18), 18), (this.mondat[mon].x - 12) % 20, (this.mondat[mon].y - 18) % 18, this.mondat[mon].dir);
+			this.dig.D().hitemerald(IntMath.div((this.mondat[mon].x - 12), 20), IntMath.div((this.mondat[mon].y - 18), 18), (this.mondat[mon].x - 12) % 20, (this.mondat[mon].y - 18) % 18, this.mondat[mon].dir);
 
 		/* If digger's gone, don't bother */
 
-		if (!this.dig.digonscr) {
+		if (!this.dig.D().digonscr) {
 			this.mondat[mon].x = monox;
 			this.mondat[mon].y = monoy;
 		}
@@ -366,8 +359,8 @@ export class Monster {
 		/* Draw monster */
 
 		push = true;
-		const clbits = this.dig.Drawing.drawmon(mon, this.mondat[mon].nob, this.mondat[mon].hdir, this.mondat[mon].x, this.mondat[mon].y);
-		this.dig.Main.incpenalty();
+		const clbits = this.dig.GetDrawing().drawmon(mon, this.mondat[mon].nob, this.mondat[mon].hdir, this.mondat[mon].x, this.mondat[mon].y);
+		this.dig.GetMain().incpenalty();
 
 		/* Collision with another monster */
 
@@ -379,25 +372,25 @@ export class Monster {
 
 		/* Check for collision with bag */
 
-		if ((clbits & this.dig.Bags.bagbits()) != 0) {
+		if ((clbits & this.dig.D().Bags.bagbits()) != 0) {
 			this.mondat[mon].t++; /* Time penalty */
 			this.mongotgold = false;
 			if (this.mondat[mon].dir == 4 || this.mondat[mon].dir == 0) { /* Horizontal push */
-				push = this.dig.Bags.pushbags(this.mondat[mon].dir, clbits);
+				push = this.dig.D().Bags.pushbags(this.mondat[mon].dir, clbits);
 				this.mondat[mon].t++; /* Time penalty */
 			}
 			else
-				if (!this.dig.Bags.pushudbags(clbits)) /* Vertical push */
+				if (!this.dig.D().Bags.pushudbags(clbits)) /* Vertical push */
 					push = false;
 			if (this.mongotgold) /* No time penalty if monster eats gold */
 				this.mondat[mon].t = 0;
 			if (!this.mondat[mon].nob && this.mondat[mon].hnt > 1)
-				this.dig.Bags.removebags(clbits); /* Hobbins eat bags */
+				this.dig.D().Bags.removebags(clbits); /* Hobbins eat bags */
 		}
 
 		/* Increase hobbin cross counter */
 
-		if (this.mondat[mon].nob && ((clbits & 0x3f00) != 0) && this.dig.digonscr)
+		if (this.mondat[mon].nob && ((clbits & 0x3f00) != 0) && this.dig.D().digonscr)
 			this.mondat[mon].hnt++;
 
 		/* See if bags push monster back */
@@ -405,24 +398,24 @@ export class Monster {
 		if (!push) {
 			this.mondat[mon].x = monox;
 			this.mondat[mon].y = monoy;
-			this.dig.Drawing.drawmon(mon, this.mondat[mon].nob, this.mondat[mon].hdir, this.mondat[mon].x, this.mondat[mon].y);
-			this.dig.Main.incpenalty();
+			this.dig.GetDrawing().drawmon(mon, this.mondat[mon].nob, this.mondat[mon].hdir, this.mondat[mon].x, this.mondat[mon].y);
+			this.dig.GetMain().incpenalty();
 			if (this.mondat[mon].nob) /* The other way to create hobbin: stuck on h-bag */
 				this.mondat[mon].hnt++;
 			if ((this.mondat[mon].dir == 2 || this.mondat[mon].dir == 6) && this.mondat[mon].nob)
-				this.mondat[mon].dir = this.dig.reversedir(this.mondat[mon].dir); /* If vertical, give up */
+				this.mondat[mon].dir = this.dig.D().reversedir(this.mondat[mon].dir); /* If vertical, give up */
 		}
 
 		/* Collision with digger */
 
-		if (((clbits & 1) != 0) && this.dig.digonscr)
-			if (this.dig.bonusmode) {
+		if (((clbits & 1) != 0) && this.dig.D().digonscr)
+			if (this.dig.D().bonusmode) {
 				this.killmon(mon);
-				this.dig.Scores.scoreeatm();
-				this.dig.Sound.soundeatm(); /* Collision in bonus mode */
+				this.dig.GetScores().scoreeatm();
+				this.dig.GetSound().soundeatm(); /* Collision in bonus mode */
 			}
 			else
-				this.dig.killdigger(3, 0); /* Kill digger */
+				this.dig.D().killdigger(3, 0); /* Kill digger */
 
 		/* Update co-ordinates */
 
@@ -432,14 +425,14 @@ export class Monster {
 		this.mondat[mon].yr = (this.mondat[mon].y - 18) % 18;
 	}
 
-	mondie(mon: number): void {
+	mondie(mon: i32): void {
 		switch (this.mondat[mon].death) {
 			case 1:
-				if (this.dig.Bags.bagy(this.mondat[mon].bag) + 6 > this.mondat[mon].y)
-					this.mondat[mon].y = this.dig.Bags.bagy(this.mondat[mon].bag);
-				this.dig.Drawing.drawmondie(mon, this.mondat[mon].nob, this.mondat[mon].hdir, this.mondat[mon].x, this.mondat[mon].y);
-				this.dig.Main.incpenalty();
-				if (this.dig.Bags.getbagdir(this.mondat[mon].bag) == -1) {
+				if (this.dig.D().Bags.bagy(this.mondat[mon].bag) + 6 > this.mondat[mon].y)
+					this.mondat[mon].y = this.dig.D().Bags.bagy(this.mondat[mon].bag);
+				this.dig.GetDrawing().drawmondie(mon, this.mondat[mon].nob, this.mondat[mon].hdir, this.mondat[mon].x, this.mondat[mon].y);
+				this.dig.GetMain().incpenalty();
+				if (this.dig.D().Bags.getbagdir(this.mondat[mon].bag) == -1) {
 					this.mondat[mon].dtime = 1;
 					this.mondat[mon].death = 4;
 				}
@@ -449,7 +442,7 @@ export class Monster {
 					this.mondat[mon].dtime--;
 				else {
 					this.killmon(mon);
-					this.dig.Scores.scorekill();
+					this.dig.GetScores().scorekill();
 				}
 		}
 	}
@@ -458,29 +451,28 @@ export class Monster {
 		this.mongotgold = true;
 	}
 
-	monleft(): number {
+	monleft(): i32 {
 		return this.nmononscr() + this.totalmonsters - this.nextmonster;
 	}
 
-	nmononscr(): number {
-		let i, n = 0;
-		for (i = 0; i < 6; i++)
+	nmononscr(): i32 {
+		let n = 0;
+		for (let i = 0; i < 6; i++)
 			if (this.mondat[i].flag)
 				n++;
 		return n;
 	}
 
-	squashmonster(mon: number, death: number, bag: number): void {
+	squashmonster(mon: i32, death: i32, bag: i32): void {
 		this.mondat[mon].alive = false;
 		this.mondat[mon].death = death;
 		this.mondat[mon].bag = bag;
 	}
 
-	squashmonsters(bag: number, bits: number): void {
-		let m, b;
-		for (m = 0, b = 256; m < 6; m++, b <<= 1)
+	squashmonsters(bag: i32, bits: i32): void {
+		for (let m = 0, b = 256; m < 6; m++, b <<= 1)
 			if ((bits & b) != 0)
-				if (this.mondat[m].y >= this.dig.Bags.bagy(bag))
+				if (this.mondat[m].y >= this.dig.D().Bags.bagy(bag))
 					this.squashmonster(m, 1, bag);
 	}
 

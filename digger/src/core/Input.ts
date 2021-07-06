@@ -1,54 +1,55 @@
+import { IDigger } from "../api/IDigger";
 import { Digger } from "./Digger";
 
 export class Input {
 
-	dig: Digger;
+	dig: IDigger;
 
-	leftpressed = false;
-	rightpressed = false;
-	uppressed = false;
-	downpressed = false;
-	f1pressed = false;
-	firepressed = false;
-	minuspressed = false;
-	pluspressed = false;
-	f10pressed = false;
-	escape = false;
+	leftpressed: boolean = false;
+	rightpressed: boolean = false;
+	uppressed: boolean = false;
+	downpressed: boolean = false;
+	f1pressed: boolean = false;
+	firepressed: boolean = false;
+	minuspressed: boolean = false;
+	pluspressed: boolean = false;
+	f10pressed: boolean = false;
+	escape: boolean = false;
 
-	keypressed = 0;
+	keypressed: i32 = 0;
 
-	akeypressed = 0;
-	dynamicdir = -1;
-	staticdir = -1;
-	joyx = 0;
-	joyy = 0;
+	akeypressed: i32 = 0;
+	dynamicdir: i32 = -1;
+	staticdir: i32 = -1;
+	joyx: i32 = 0;
+	joyy: i32 = 0;
 
-	joybut1 = false;
-	joybut2 = false;
+	joybut1: boolean = false;
+	joybut2: boolean = false;
 
-	keydir = 0;
-	jleftthresh = 0;
-	jupthresh = 0;
-	jrightthresh = 0;
-	jdownthresh = 0;
-	joyanax = 0;
-	joyanay = 0;
-	firepflag = false;
+	keydir: i32 = 0;
+	jleftthresh: i32 = 0;
+	jupthresh: i32 = 0;
+	jrightthresh: i32 = 0;
+	jdownthresh: i32 = 0;
+	joyanax: i32 = 0;
+	joyanay: i32 = 0;
+	firepflag: boolean = false;
 
-	joyflag = false;
+	joyflag: boolean = false;
 
-	constructor(d: Digger) {
+	constructor(d: IDigger) {
 		this.dig = d;
 	}
 
 	checkkeyb(): void {
 		if (this.pluspressed) {
-			if (this.dig.frametime > Digger.MIN_RATE)
-				this.dig.frametime -= 5;
+			if (this.dig.D().frametime > Digger.MIN_RATE)
+				this.dig.D().frametime -= 5;
 		}
 		if (this.minuspressed) {
-			if (this.dig.frametime < Digger.MAX_RATE)
-				this.dig.frametime += 5;
+			if (this.dig.D().frametime < Digger.MAX_RATE)
+				this.dig.D().frametime += 5;
 		}
 		if (this.f10pressed)
 			this.escape = true;
@@ -73,7 +74,7 @@ export class Input {
 		this.staticdir = this.dynamicdir = -1;
 	}
 
-	getasciikey(make: string): number {
+	getasciikey(make: string): i32 {
 		// var k;
 		if ((make == ' ') || ((make >= 'a') && (make <= 'z')) || ((make >= '0') && (make <= '9')))
 			return make.charCodeAt(0);
@@ -89,7 +90,7 @@ export class Input {
 			k+='A'-'a'; */
 	}
 
-	getdir(): number {
+	getdir(): i32 {
 		const bp2 = this.keydir;
 		/*  if (joyflag) {
 			bp2=-1;
@@ -162,7 +163,7 @@ export class Input {
 			this.setdirec();
 	}
 
-	processkey(key: number): void {
+	processkey(key: i32): void {
 		this.keypressed = key;
 		if (key > 0x80)
 			this.akeypressed = key & 0x7f;

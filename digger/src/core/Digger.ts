@@ -5,11 +5,10 @@ import { IDigger } from "../api/IDigger";
 import { IFactory } from "../api/IFactory";
 import { IPc } from "../api/IPc";
 import { IntMath } from "../web/IntMath";
-import { Sys } from "../web/Sys";
-import { Threading } from "../web/Threading";
 import { Bags } from "./Bags";
 import { ColorModel } from "./ColorModel";
 import { Drawing } from "./Drawing";
+import { FakeDigger, FakeFactory } from "./fake";
 import { Input } from "./Input";
 import { Main } from "./Main";
 import { Monster } from "./Monster";
@@ -20,55 +19,55 @@ import { Sprite } from "./Sprite";
 
 export class Digger implements IDigger {
 
-	static MAX_RATE = 200;
-	static MIN_RATE = 40;
+	static MAX_RATE: i32 = 200;
+	static MIN_RATE: i32 = 40;
 
-	width = 320;
-	height = 200;
-	frametime = 66;
+	width: i32 = 320;
+	height: i32 = 200;
+	frametime: i32 = 66;
 
 	subaddr: string = '';
 
-	Bags: Bags;
-	Main: Main;
-	Sound: Sound;
-	Monster: Monster;
-	Scores: Scores;
-	Sprite: Sprite;
-	Drawing: Drawing;
-	Input: Input;
-	Pc: Pc;
+	Bags: Bags = new Bags(new FakeDigger());
+	Main: Main = new Main(new FakeDigger(), new FakeFactory());
+	Sound: Sound = new Sound(new FakeDigger(), new FakeFactory());
+	Monster: Monster = new Monster(new FakeDigger());
+	Scores: Scores = new Scores(new FakeDigger(), new FakeFactory());
+	Sprite: Sprite = new Sprite(new FakeDigger());
+	Drawing: Drawing = new Drawing(new FakeDigger());
+	Input: Input = new Input(new FakeDigger());
+	Pc: Pc = new Pc(new FakeDigger());
 
-	_factory: IFactory;
+	_factory: IFactory = new FakeFactory();
 
 	// -----
 
-	diggerx = 0;
-	diggery = 0;
-	diggerh = 0;
-	diggerv = 0;
-	diggerrx = 0;
-	diggerry = 0;
-	digmdir = 0;
-	digdir = 0;
-	digtime = 0;
-	rechargetime = 0;
-	firex = 0;
-	firey = 0;
-	firedir = 0;
-	expsn = 0;
-	deathstage = 0;
-	deathbag = 0;
-	deathani = 0;
-	deathtime = 0;
-	startbonustimeleft = 0;
-	bonustimeleft = 0;
-	eatmsc = 0;
-	emocttime = 0;
+	diggerx: i32 = 0;
+	diggery: i32 = 0;
+	diggerh: i32 = 0;
+	diggerv: i32 = 0;
+	diggerrx: i32 = 0;
+	diggerry: i32 = 0;
+	digmdir: i32 = 0;
+	digdir: i32 = 0;
+	digtime: i32 = 0;
+	rechargetime: i32 = 0;
+	firex: i32 = 0;
+	firey: i32 = 0;
+	firedir: i32 = 0;
+	expsn: i32 = 0;
+	deathstage: i32 = 0;
+	deathbag: i32 = 0;
+	deathani: i32 = 0;
+	deathtime: i32 = 0;
+	startbonustimeleft: i32 = 0;
+	bonustimeleft: i32 = 0;
+	eatmsc: i32 = 0;
+	emocttime: i32 = 0;
 
-	emmask = 0;
+	emmask: i32 = 0;
 
-	emfield: number[] = [	//[150]
+	emfield: i32[] = [	//[150]
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -80,23 +79,23 @@ export class Digger implements IDigger {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-	digonscr = false;
-	notfiring = false;
-	bonusvisible = false;
-	bonusmode = false;
-	diggervisible = false;
+	digonscr: boolean = false;
+	notfiring: boolean = false;
+	bonusvisible: boolean = false;
+	bonusmode: boolean = false;
+	diggervisible: boolean = false;
 
-	time = 0;
-	ftime = 50;
-	embox: number[] = [8, 12, 12, 9, 16, 12, 6, 9];	// [8]
-	deatharc: number[] = [3, 5, 6, 6, 5, 3, 0];			// [7]
+	time: i64 = 0;
+	ftime: i32 = 50;
+	embox: i32[] = [8, 12, 12, 9, 16, 12, 6, 9];	// [8]
+	deatharc: i32[] = [3, 5, 6, 6, 5, 3, 0];			// [7]
 
 	constructor(factory: IFactory) {
 		this.Bags = new Bags(this);
-		this.Main = new Main(this);
-		this.Sound = new Sound(this);
+		this.Main = new Main(this, factory);
+		this.Sound = new Sound(this, factory);
 		this.Monster = new Monster(this);
-		this.Scores = new Scores(this);
+		this.Scores = new Scores(this, factory);
 		this.Sprite = new Sprite(this);
 		this.Drawing = new Drawing(this);
 		this.Input = new Input(this);
@@ -105,11 +104,17 @@ export class Digger implements IDigger {
 		this._factory = factory;
 	}
 
-	GetPc(): IPc {
-		return this.Pc;
-	}
+	D(): Digger { return this; }
+	GetInput(): Input { return this.Input; }
+	GetScores(): Scores { return this.Scores; }
+	GetMonster(): Monster { return this.Monster; }
+	GetSprite(): Sprite { return this.Sprite; }
+	GetSound(): Sound { return this.Sound; }
+	GetMain(): Main { return this.Main; }
+	GetDrawing(): Drawing { return this.Drawing; }
+	GetPc(): IPc { return this.Pc; }
 
-	checkdiggerunderbag(h: number, v: number): boolean {
+	checkdiggerunderbag(h: i32, v: i32): boolean {
 		if (this.digmdir == 2 || this.digmdir == 6)
 			if (IntMath.div((this.diggerx - 12), 20) == h)
 				if (IntMath.div((this.diggery - 18), 18) == v || IntMath.div((this.diggery - 18), 18) + 1 == v)
@@ -117,10 +122,10 @@ export class Digger implements IDigger {
 		return false;
 	}
 
-	countem(): number {
-		let x, y, n = 0;
-		for (x = 0; x < 15; x++)
-			for (y = 0; y < 10; y++)
+	countem(): i32 {
+		let n = 0;
+		for (let x = 0; x < 15; x++)
+			for (let y = 0; y < 10; y++)
 				if ((this.emfield[y * 15 + x] & this.emmask) != 0)
 					n++;
 		return n;
@@ -137,7 +142,7 @@ export class Digger implements IDigger {
 	}
 
 	diggerdie(): void {
-		let clbits;
+		let clbits = 0;
 		switch (this.deathstage) {
 			case 1:
 				if (this.Bags.bagy(this.deathbag) + 6 > this.diggery)
@@ -204,8 +209,8 @@ export class Digger implements IDigger {
 		}
 	}
 
-	async dodigger(): Promise<void> {
-		await this.newframe();
+	dodigger(): void {
+		this.newframe();
 		if (this.expsn != 0)
 			this.drawexplosion();
 		else
@@ -257,10 +262,9 @@ export class Digger implements IDigger {
 	}
 
 	drawemeralds(): void {
-		let x, y;
 		this.emmask = 1 << this.Main.getcplayer();
-		for (x = 0; x < 15; x++)
-			for (y = 0; y < 10; y++)
+		for (let x = 0; x < 15; x++)
+			for (let y = 0; y < 10; y++)
 				if ((this.emfield[y * 15 + x] & this.emmask) != 0)
 					this.Drawing.drawemerald(x * 20 + 12, y * 18 + 21);
 	}
@@ -307,9 +311,9 @@ export class Digger implements IDigger {
 		return this.Input.firepflag;
 	}
 
-	hitemerald(x: number, y: number, rx: number, ry: number, dir: number): boolean {
+	hitemerald(x: i32, y: i32, rx: i32, ry: i32, dir: i32): boolean {
 		let hit = false;
-		let r;
+		let r = 0;
 		if (dir < 0 || dir > 6 || ((dir & 1) != 0))
 			return hit;
 		if (dir == 0 && rx != 0)
@@ -340,19 +344,19 @@ export class Digger implements IDigger {
 		//if (this.gamethread != null)
 		//this.gamethread.stop();
 
-		this.subaddr = Sys.getSubmitParameter();
+		this.subaddr = this._factory.GetSubmitParameter();
 
-		this.frametime = Sys.getSpeedParameter();
+		this.frametime = this._factory.GetSpeedParameter();
 		if (this.frametime > Digger.MAX_RATE)
 			this.frametime = Digger.MAX_RATE;
 		else if (this.frametime < Digger.MIN_RATE)
 			this.frametime = Digger.MIN_RATE;
 
-		this.Pc.pixels = new Array(65536);
+		this.Pc.pixels = (new Array<i32>(65536)).fill(0, 0, 65536);
 
 		for (let i = 0; i < 2; i++) {
 			const model = new ColorModel(8, 4, this.Pc.pal[i][0], this.Pc.pal[i][1], this.Pc.pal[i][2]);
-			this.Pc.source[i] = this._factory.CreateRefresher(this, model);
+			this.Pc.source[i] = this._factory.CreateRefresher(this, model, this._factory);
 			this.Pc.source[i].newPixelsAll();
 		}
 
@@ -390,7 +394,7 @@ export class Digger implements IDigger {
 		this.rechargetime = 0;
 	}
 
-	public keyDown(key: number): boolean {
+	public keyDown(key: i32): boolean {
 		switch (key) {
 			case 1006: this.Input.processkey(0x4b); break;
 			case 1007: this.Input.processkey(0x4d); break;
@@ -409,7 +413,7 @@ export class Digger implements IDigger {
 		return true;
 	}
 
-	public keyUp(key: number): boolean {
+	public keyUp(key: i32): boolean {
 		switch (key) {
 			case 1006: this.Input.processkey(0xcb); break;
 			case 1007: this.Input.processkey(0xcd); break;
@@ -428,7 +432,7 @@ export class Digger implements IDigger {
 		return true;
 	}
 
-	killdigger(stage: number, bag: number): void {
+	killdigger(stage: i32, bag: i32): void {
 		if (this.deathstage < 2 || this.deathstage > 4) {
 			this.digonscr = false;
 			this.deathstage = stage;
@@ -436,7 +440,7 @@ export class Digger implements IDigger {
 		}
 	}
 
-	killemerald(x: number, y: number): void {
+	killemerald(x: i32, y: i32): void {
 		if ((this.emfield[y * 15 + x + 15] & this.emmask) != 0) {
 			this.emfield[y * 15 + x + 15] &= ~this.emmask;
 			this.Drawing.eraseemerald(x * 20 + 12, (y + 1) * 18 + 21);
@@ -452,28 +456,29 @@ export class Digger implements IDigger {
 	}
 
 	makeemfield(): void {
-		let x, y;
 		this.emmask = 1 << this.Main.getcplayer();
-		for (x = 0; x < 15; x++)
-			for (y = 0; y < 10; y++)
+		for (let x = 0; x < 15; x++)
+			for (let y = 0; y < 10; y++)
 				if (this.Main.getlevch(x, y, this.Main.levplan()) == 'C')
 					this.emfield[y * 15 + x] |= this.emmask;
 				else
 					this.emfield[y * 15 + x] &= ~this.emmask;
 	}
 
-	async newframe(): Promise<void> {
+	newframe(): void {
 		this.Input.checkkeyb();
 		this.time += this.frametime;
 		const l = this.time - this.Pc.gethrt();
 		if (l > 0) {
-			await Threading.sleep(l);
+			this._factory.Sleep(l);
 		}
-		if (this.Pc.currentSource)
+
+		if (this.Pc.currentSource) {
 			this.Pc.currentSource.newPixelsAll();
+		}
 	}
 
-	reversedir(dir: number): number {
+	reversedir(dir: i32): i32 {
 		switch (dir) {
 			case 0: return 4;
 			case 4: return 0;
@@ -483,17 +488,17 @@ export class Digger implements IDigger {
 		return dir;
 	}
 
-	private async run(): Promise<void> {
-		await this.Main.main();
+	private run(): void {
+		this.Main.main();
 	}
 
-	public async start(): Promise<void> {
-		Sys.requestFocus();
-		await this.run();
+	public start(): void {
+		this._factory.RequestFocus();
+		this.run();
 	}
 
 	updatedigger(): void {
-		let ddir, nmon
+		let ddir = 0, nmon = 0
 		let push = false;
 		this.Input.readdir();
 		const dir = this.Input.getdir();
@@ -575,7 +580,7 @@ export class Digger implements IDigger {
 	}
 
 	updatefire(): void {
-		let clbits, b, mon, pix = 0;
+		let clbits = 0, b = 0, mon = 0, pix = 0;
 		if (this.notfiring) {
 			if (this.rechargetime != 0)
 				this.rechargetime--;

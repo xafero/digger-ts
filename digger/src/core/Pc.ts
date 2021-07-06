@@ -1,24 +1,26 @@
+import { IDigger } from "../api/IDigger";
 import { IPc } from "../api/IPc";
 import { IRefresher } from "../api/IRefresher";
 import { IntMath } from "../web/IntMath";
 import { alpha } from "./alpha";
 import { cgagrafx } from "./cgagrafx";
 import { Digger } from "./Digger";
+import { FakeRefresher } from "./fake";
 
 export class Pc implements IPc {
 
-	dig: Digger;
+	dig: IDigger;
 
-	source: IRefresher[] = new Array(2);
-	currentSource: (IRefresher | null);
+	source: IRefresher[] = [new FakeRefresher(), new FakeRefresher()];
+	currentSource: IRefresher = new FakeRefresher();
 
-	width = 320;
-	height = 200;
-	size = this.width * this.height;
+	width: i32 = 320;
+	height: i32 = 200;
+	size: i32 = this.width * this.height;
 
-	pixels: number[] = [];
+	pixels: i32[] = [];
 
-	pal: number[][][] = [
+	pal: i32[][][] = [
 
 		[[0, 0x00, 0xAA, 0xAA],
 		[0, 0xAA, 0x00, 0x54],
@@ -28,24 +30,27 @@ export class Pc implements IPc {
 		[0, 0xFF, 0x54, 0xFF],
 		[0, 0x54, 0x54, 0x54]]];
 
-	constructor(d: Digger) {
+	constructor(d: IDigger) {
 		this.dig = d;
-		this.currentSource = null;
 	}
 
-	GetWidth(): number {
+	P(): Pc {
+		return this;
+	}
+
+	GetWidth(): i32 {
 		return this.width;
 	}
 
-	GetHeight(): number {
+	GetHeight(): i32 {
 		return this.height;
 	}
 
-	GetPixels(): number[] {
+	GetPixels(): i32[] {
 		return this.pixels;
 	}
 
-	GetCurrentSource(): (IRefresher | null) {
+	GetCurrentSource(): IRefresher {
 		return this.currentSource;
 	}
 
@@ -56,15 +61,15 @@ export class Pc implements IPc {
 			this.currentSource.newPixelsAll();
 	}
 
-	gethrt(): number {
+	gethrt(): i64 {
 		return Date.now();
 	}
 
-	getkips(): number {
+	getkips(): i32 {
 		return 0;		// phony
 	}
 
-	ggeti(x: number, y: number, p: (number[] | null), w: number, h: number): void {
+	ggeti(x: i32, y: i32, p: (i32[] | null), w: i32, h: i32): void {
 
 		if (p == null)
 			return;
@@ -84,7 +89,7 @@ export class Pc implements IPc {
 		}
 	}
 
-	ggetpix(x: number, y: number): number {
+	ggetpix(x: i32, y: i32): i32 {
 		const ofs = this.width * y + x & 0xfffc;
 		return (((((this.pixels[ofs] << 2) | this.pixels[ofs + 1]) << 2) | this.pixels[ofs + 2]) << 2) | this.pixels[ofs + 3];
 	}
@@ -92,19 +97,19 @@ export class Pc implements IPc {
 	ginit(): void {
 	}
 
-	ginten(inten: number): void {
+	ginten(inten: i32): void {
 		this.currentSource = this.source[inten & 1];
 		this.currentSource.newPixelsAll();
 	}
 
-	gpal(pal: number): void {
+	gpal(pal: i32): void {
 	}
 
-	gputi2(x: number, y: number, p: (number[] | null), w: number, h: number): void {
+	gputi2(x: i32, y: i32, p: (i32[] | null), w: i32, h: i32): void {
 		this.gputi(x, y, p, w, h, true);
 	}
 
-	gputi(x: number, y: number, p: (number[] | null), w: number, h: number, b: boolean): void {
+	gputi(x: i32, y: i32, p: (i32[] | null), w: i32, h: i32, b: boolean): void {
 
 		if (p == null)
 			return;
@@ -131,10 +136,10 @@ export class Pc implements IPc {
 		}
 	}
 
-	gputim(x: number, y: number, ch: number, w: number, h: number): void {
+	gputim(x: i32, y: i32, ch: i32, w: i32, h: i32): void {
 
-		const spr: number[] = cgagrafx.cgatable[ch * 2];
-		const msk: number[] = cgagrafx.cgatable[ch * 2 + 1];
+		const spr: i32[] = cgagrafx.cgatable[ch * 2];
+		const msk: i32[] = cgagrafx.cgatable[ch * 2 + 1];
 
 		let src = 0;
 		let dest = y * this.width + (x & 0xfffc);
@@ -175,7 +180,7 @@ export class Pc implements IPc {
 				break;
 
 			const b = cgagrafx.cgatitledat[src++];
-			let l, c;
+			let l = 0, c = 0;
 
 			if (b == 0xfe) {
 				l = cgagrafx.cgatitledat[src++];
@@ -191,9 +196,9 @@ export class Pc implements IPc {
 			for (let i = 0; i < l; i++) {
 				let px = c, adst = 0;
 				if (dest < 32768)
-					adst = IntMath.div(dest , 320) * 640 + dest % 320;
+					adst = IntMath.div(dest, 320) * 640 + dest % 320;
 				else
-					adst = 320 + (IntMath.div((dest - 32768) , 320)) * 640 + (dest - 32768) % 320;
+					adst = 320 + (IntMath.div((dest - 32768), 320)) * 640 + (dest - 32768) % 320;
 				this.pixels[adst + 3] = px & 3;
 				px >>= 2;
 				this.pixels[adst + 2] = px & 3;
@@ -213,11 +218,11 @@ export class Pc implements IPc {
 
 	}
 
-	gwrite2(x: number, y: number, ch: number, c: number): void {
+	gwrite2(x: i32, y: i32, ch: i32, c: i32): void {
 		this.gwrite(x, y, ch, c, false);
 	}
 
-	gwrite(x: number, y: number, ch: number, c: number, upd: boolean): void {
+	gwrite(x: i32, y: i32, ch: i32, c: i32, upd: boolean): void {
 
 		const color = c & 3;
 		let dest = x + y * this.width, ofs = 0;

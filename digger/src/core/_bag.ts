@@ -1,16 +1,16 @@
 
 export class _bag {
 
-	x: number = 0;
-	y: number = 0;
-	h: number = 0;
-	v: number = 0;
-	xr: number = 0;
-	yr: number = 0;
-	dir: number = 0;
-	wt: number = 0;
-	gt: number = 0;
-	fallh: number = 0;
+	x: i32 = 0;
+	y: i32 = 0;
+	h: i32 = 0;
+	v: i32 = 0;
+	xr: i32 = 0;
+	yr: i32 = 0;
+	dir: i32 = 0;
+	wt: i32 = 0;
+	gt: i32 = 0;
+	fallh: i32 = 0;
 
 	wobbling: boolean = false;
 	unfallen: boolean = false;

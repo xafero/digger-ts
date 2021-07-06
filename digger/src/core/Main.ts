@@ -1,13 +1,15 @@
+import { IDigger } from "../api/IDigger";
+import { IFactory } from "../api/IFactory";
 import { IntMath } from "../web/IntMath";
-import { Threading } from "../web/Threading";
 import { Digger } from "./Digger";
 import { _game } from "./_game";
 
 export class Main {
 
-	dig: Digger;
+	dig: IDigger;
+	factory: IFactory;
 
-	digsprorder: number[] = [14, 13, 7, 6, 5, 4, 3, 2, 1, 12, 11, 10, 9, 8, 15, 0];	// [16]
+	digsprorder: i32[] = [14, 13, 7, 6, 5, 4, 3, 2, 1, 12, 11, 10, 9, 8, 15, 0];	// [16]
 
 	gamedat: _game[] = [new _game(), new _game()];
 
@@ -15,18 +17,18 @@ export class Main {
 
 	shouldRun: boolean = true;
 
-	curplayer = 0;
-	nplayers = 0;
-	penalty = 0;
-	levnotdrawn = false;
-	flashplayer = false;
+	curplayer: i32 = 0;
+	nplayers: i32 = 0;
+	penalty: i32 = 0;
+	levnotdrawn: boolean = false;
+	flashplayer: boolean = false;
 
-	levfflag = false;
-	biosflag = false;
-	speedmul = 40;
-	delaytime = 0;
+	levfflag: boolean = false;
+	biosflag: boolean = false;
+	speedmul: i32 = 40;
+	delaytime: i32 = 0;
 
-	randv: number = 0;
+	randv: i64 = 0;
 
 	leveldat: string[][] =		// [8][10][15]
 		[["S   B     HHHHS",
@@ -110,53 +112,54 @@ export class Main {
 			"VCCCCCV VCCCCCV",
 			"HHHHHHHHHHHHHHH"]];
 
-	constructor(d: Digger) {
+	constructor(d: IDigger, f: IFactory) {
 		this.dig = d;
+		this.factory = f;
 	}
 
-	addlife(pl: number): void {
+	addlife(pl: i32): void {
 		this.gamedat[pl - 1].lives++;
-		this.dig.Sound.sound1up();
+		this.dig.GetSound().sound1up();
 	}
 
 	calibrate(): void {
-		this.dig.Sound.volume = IntMath.div(this.dig.Pc.getkips(), 291);
-		if (this.dig.Sound.volume == 0)
-			this.dig.Sound.volume = 1;
+		this.dig.GetSound().volume = IntMath.div(this.dig.GetPc().P().getkips(), 291);
+		if (this.dig.GetSound().volume == 0)
+			this.dig.GetSound().volume = 1;
 	}
 
 	checklevdone(): void {
-		if ((this.dig.countem() == 0 || this.dig.Monster.monleft() == 0) && this.dig.digonscr)
+		if ((this.dig.D().countem() == 0 || this.dig.GetMonster().monleft() == 0) && this.dig.D().digonscr)
 			this.gamedat[this.curplayer].levdone = true;
 		else
 			this.gamedat[this.curplayer].levdone = false;
 	}
 
 	cleartopline(): void {
-		this.dig.Drawing.outtext2("                          ", 0, 0, 3);
-		this.dig.Drawing.outtext2(" ", 308, 0, 3);
+		this.dig.GetDrawing().outtext2("                          ", 0, 0, 3);
+		this.dig.GetDrawing().outtext2(" ", 308, 0, 3);
 	}
 
 	drawscreen(): void {
-		this.dig.Drawing.creatembspr();
-		this.dig.Drawing.drawstatics();
-		this.dig.Bags.drawbags();
-		this.dig.drawemeralds();
-		this.dig.initdigger();
-		this.dig.Monster.initmonsters();
+		this.dig.GetDrawing().creatembspr();
+		this.dig.GetDrawing().drawstatics();
+		this.dig.D().Bags.drawbags();
+		this.dig.D().drawemeralds();
+		this.dig.D().initdigger();
+		this.dig.GetMonster().initmonsters();
 	}
 
-	getcplayer(): number {
+	getcplayer(): i32 {
 		return this.curplayer;
 	}
 
-	getlevch(x: number, y: number, l: number): string {
+	getlevch(x: i32, y: i32, l: i32): string {
 		if (l == 0)
 			l++;
 		return this.leveldat[l - 1][y].charAt(x);
 	}
 
-	getlives(pl: number): number {
+	getlives(pl: i32): i32 {
 		return this.gamedat[pl - 1].lives;
 	}
 
@@ -165,140 +168,141 @@ export class Main {
 	}
 
 	initchars(): void {
-		this.dig.Drawing.initmbspr();
-		this.dig.initdigger();
-		this.dig.Monster.initmonsters();
+		this.dig.GetDrawing().initmbspr();
+		this.dig.D().initdigger();
+		this.dig.GetMonster().initmonsters();
 	}
 
 	initlevel(): void {
 		this.gamedat[this.curplayer].levdone = false;
-		this.dig.Drawing.makefield();
-		this.dig.makeemfield();
-		this.dig.Bags.initbags();
+		this.dig.GetDrawing().makefield();
+		this.dig.D().makeemfield();
+		this.dig.D().Bags.initbags();
 		this.levnotdrawn = true;
 	}
 
-	levno(): number {
+	levno(): i32 {
 		return this.gamedat[this.curplayer].level;
 	}
 
-	levof10(): number {
+	levof10(): i32 {
 		if (this.gamedat[this.curplayer].level > 10)
 			return 10;
 		return this.gamedat[this.curplayer].level;
 	}
 
-	levplan(): number {
+	levplan(): i32 {
 		let l = this.levno();
 		if (l > 8)
 			l = (l & 3) + 5; /* Level plan: 12345678, 678, (5678) 247 times, 5 forever */
 		return l;
 	}
 
-	async main(): Promise<void> {
-		let frame, t, x = 0;
+	main(): void {
+		let frame = 0, t = 0, x = 0;
 		let start: boolean;
 
-		this.randv = this.dig.Pc.gethrt();
+		this.randv = this.dig.GetPc().P().gethrt();
 		this.calibrate();
 		//  parsecmd(argc,argv);
-		this.dig.ftime = this.speedmul * 2000;
-		this.dig.Sprite.setretr(false);
-		this.dig.Pc.ginit();
-		this.dig.Sprite.setretr(true);
-		this.dig.Pc.gpal(0);
-		this.dig.Input.initkeyb();
-		this.dig.Input.detectjoy();
-		this.dig.Scores.loadscores();
-		this.dig.Sound.initsound();
+		this.dig.D().ftime = this.speedmul * 2000;
+		this.dig.GetSprite().setretr(false);
+		this.dig.GetPc().P().ginit();
+		this.dig.GetSprite().setretr(true);
+		this.dig.GetPc().P().gpal(0);
+		this.dig.GetInput().initkeyb();
+		this.dig.GetInput().detectjoy();
+		this.dig.GetScores().loadscores();
+		this.dig.GetSound().initsound();
 
-		this.dig.Scores.run();		// ??
-		this.dig.Scores._updatescores(this.dig.Scores.scores);
+		this.dig.GetScores().run();		// ??
+		this.dig.GetScores()._updatescores(this.dig.GetScores().scores);
 
 		this.nplayers = 1;
 		do {
-			this.dig.Sound.soundstop();
-			this.dig.Sprite.setsprorder(this.digsprorder);
-			this.dig.Drawing.creatembspr();
-			this.dig.Input.detectjoy();
-			this.dig.Pc.gclear();
-			this.dig.Pc.gtitle();
-			this.dig.Drawing.outtext2("D I G G E R", 100, 0, 3);
+			this.dig.GetSound().soundstop();
+			this.dig.GetSprite().setsprorder(this.digsprorder);
+			this.dig.GetDrawing().creatembspr();
+			this.dig.GetInput().detectjoy();
+			this.dig.GetPc().P().gclear();
+			this.dig.GetPc().P().gtitle();
+			this.dig.GetDrawing().outtext2("D I G G E R", 100, 0, 3);
 			this.shownplayers();
-			this.dig.Scores.showtable();
+			this.dig.GetScores().showtable();
 			start = false;
 			frame = 0;
 
-			this.dig.time = this.dig.Pc.gethrt();
+			this.dig.D().time = this.dig.GetPc().P().gethrt();
 
 			while (!start) {
-				start = this.dig.Input.teststart();
-				if (this.dig.Input.akeypressed == 27) {  //	esc
+				start = this.dig.GetInput().teststart();
+				if (this.dig.GetInput().akeypressed == 27) {  //	esc
 					this.switchnplayers();
 					this.shownplayers();
-					this.dig.Input.akeypressed = 0;
-					this.dig.Input.keypressed = 0;
+					this.dig.GetInput().akeypressed = 0;
+					this.dig.GetInput().keypressed = 0;
 				}
 				if (frame == 0)
 					for (t = 54; t < 174; t += 12)
-						this.dig.Drawing.outtext2("            ", 164, t, 0);
+						this.dig.GetDrawing().outtext2("            ", 164, t, 0);
 				if (frame == 50) {
-					this.dig.Sprite.movedrawspr(8, 292, 63);
+					this.dig.GetSprite().movedrawspr(8, 292, 63);
 					x = 292;
 				}
 				if (frame > 50 && frame <= 77) {
 					x -= 4;
-					this.dig.Drawing.drawmon(0, true, 4, x, 63);
+					this.dig.GetDrawing().drawmon(0, true, 4, x, 63);
 				}
 				if (frame > 77)
-					this.dig.Drawing.drawmon(0, true, 0, 184, 63);
+					this.dig.GetDrawing().drawmon(0, true, 0, 184, 63);
 				if (frame == 83)
-					this.dig.Drawing.outtext2("NOBBIN", 216, 64, 2);
+					this.dig.GetDrawing().outtext2("NOBBIN", 216, 64, 2);
 				if (frame == 90) {
-					this.dig.Sprite.movedrawspr(9, 292, 82);
-					this.dig.Drawing.drawmon(1, false, 4, 292, 82);
+					this.dig.GetSprite().movedrawspr(9, 292, 82);
+					this.dig.GetDrawing().drawmon(1, false, 4, 292, 82);
 					x = 292;
 				}
 				if (frame > 90 && frame <= 117) {
 					x -= 4;
-					this.dig.Drawing.drawmon(1, false, 4, x, 82);
+					this.dig.GetDrawing().drawmon(1, false, 4, x, 82);
 				}
 				if (frame > 117)
-					this.dig.Drawing.drawmon(1, false, 0, 184, 82);
+					this.dig.GetDrawing().drawmon(1, false, 0, 184, 82);
 				if (frame == 123)
-					this.dig.Drawing.outtext2("HOBBIN", 216, 83, 2);
+					this.dig.GetDrawing().outtext2("HOBBIN", 216, 83, 2);
 				if (frame == 130) {
-					this.dig.Sprite.movedrawspr(0, 292, 101);
-					this.dig.Drawing.drawdigger(4, 292, 101, true);
+					this.dig.GetSprite().movedrawspr(0, 292, 101);
+					this.dig.GetDrawing().drawdigger(4, 292, 101, true);
 					x = 292;
 				}
 				if (frame > 130 && frame <= 157) {
 					x -= 4;
-					this.dig.Drawing.drawdigger(4, x, 101, true);
+					this.dig.GetDrawing().drawdigger(4, x, 101, true);
 				}
 				if (frame > 157)
-					this.dig.Drawing.drawdigger(0, 184, 101, true);
+					this.dig.GetDrawing().drawdigger(0, 184, 101, true);
 				if (frame == 163)
-					this.dig.Drawing.outtext2("DIGGER", 216, 102, 2);
+					this.dig.GetDrawing().outtext2("DIGGER", 216, 102, 2);
 				if (frame == 178) {
-					this.dig.Sprite.movedrawspr(1, 184, 120);
-					this.dig.Drawing.drawgold(1, 0, 184, 120);
+					this.dig.GetSprite().movedrawspr(1, 184, 120);
+					this.dig.GetDrawing().drawgold(1, 0, 184, 120);
 				}
 				if (frame == 183)
-					this.dig.Drawing.outtext2("GOLD", 216, 121, 2);
+					this.dig.GetDrawing().outtext2("GOLD", 216, 121, 2);
 				if (frame == 198)
-					this.dig.Drawing.drawemerald(184, 141);
+					this.dig.GetDrawing().drawemerald(184, 141);
 				if (frame == 203)
-					this.dig.Drawing.outtext2("EMERALD", 216, 140, 2);
+					this.dig.GetDrawing().outtext2("EMERALD", 216, 140, 2);
 				if (frame == 218)
-					this.dig.Drawing.drawbonus(184, 158);
+					this.dig.GetDrawing().drawbonus(184, 158);
 				if (frame == 223)
-					this.dig.Drawing.outtext2("BONUS", 216, 159, 2);
-				await this.dig.newframe();
+					this.dig.GetDrawing().outtext2("BONUS", 216, 159, 2);		
+					this.dig.D().newframe();
 				frame++;
 				if (frame > 250)
 					frame = 0;
 			}
+
 			this.gamedat[0].level = 1;
 			this.gamedat[0].lives = 3;
 			if (this.nplayers == 2) {
@@ -307,41 +311,41 @@ export class Main {
 			}
 			else
 				this.gamedat[1].lives = 0;
-			this.dig.Pc.gclear();
+			this.dig.GetPc().P().gclear();
 			this.curplayer = 0;
 			this.initlevel();
 			this.curplayer = 1;
 			this.initlevel();
-			this.dig.Scores.zeroscores();
-			this.dig.bonusvisible = true;
+			this.dig.GetScores().zeroscores();
+			this.dig.D().bonusvisible = true;
 			if (this.nplayers == 2)
 				this.flashplayer = true;
 			this.curplayer = 0;
-			//	if (dig.Input.escape)
+			//	if (dig.GetInput().escape)
 			//	  break;
 			//    if (recording)
 			//	  recputinit();
-			while ((this.gamedat[0].lives != 0 || this.gamedat[1].lives != 0) && !this.dig.Input.escape) {
+			while ((this.gamedat[0].lives != 0 || this.gamedat[1].lives != 0) && !this.dig.GetInput().escape) {
 				this.gamedat[this.curplayer].dead = false;
-				while (!this.gamedat[this.curplayer].dead && this.gamedat[this.curplayer].lives != 0 && !this.dig.Input.escape) {
-					this.dig.Drawing.initmbspr();
-					await this.play();
+				while (!this.gamedat[this.curplayer].dead && this.gamedat[this.curplayer].lives != 0 && !this.dig.GetInput().escape) {
+					this.dig.GetDrawing().initmbspr();
+					this.play();
 				}
 				if (this.gamedat[1 - this.curplayer].lives != 0) {
 					this.curplayer = 1 - this.curplayer;
 					this.flashplayer = this.levnotdrawn = true;
 				}
 			}
-			this.dig.Input.escape = false;
-		} while (this.shouldRun); //dig.Input.escape);
-		/*  dig.Sound.soundoff();
+			this.dig.GetInput().escape = false;
+		} while (this.shouldRun); //dig.GetInput().escape);
+		/*  dig.GetSound().soundoff();
 		  restoreint8();
 		  restorekeyb();
 		  graphicsoff(); */
 	}
 
-	async play(): Promise<void> {
-		let t, c;
+	play(): void {
+		let t = 0, c = 0;
 		/*  if (playing)
 			randv=recgetrand();
 		  else
@@ -351,7 +355,7 @@ export class Main {
 		if (this.levnotdrawn) {
 			this.levnotdrawn = false;
 			this.drawscreen();
-			this.dig.time = this.dig.Pc.gethrt();
+			this.dig.D().time = this.dig.GetPc().P().gethrt();
 			if (this.flashplayer) {
 				this.flashplayer = false;
 				this.pldispbuf = "PLAYER ";
@@ -362,64 +366,64 @@ export class Main {
 				this.cleartopline();
 				for (t = 0; t < 15; t++)
 					for (c = 1; c <= 3; c++) {
-						this.dig.Drawing.outtext2(this.pldispbuf, 108, 0, c);
-						this.dig.Scores.writecurscore(c);
+						this.dig.GetDrawing().outtext2(this.pldispbuf, 108, 0, c);
+						this.dig.GetScores().writecurscore(c);
 						/* olddelay(20); */
-						this.dig.newframe();
-						if (this.dig.Input.escape)
+						this.dig.D().newframe();
+						if (this.dig.GetInput().escape)
 							return;
 					}
-				this.dig.Scores.drawscores();
-				this.dig.Scores.addscore(0);
+				this.dig.GetScores().drawscores();
+				this.dig.GetScores().addscore(0);
 			}
 		}
 		else
 			this.initchars();
-		this.dig.Input.keypressed = 0;
-		this.dig.Drawing.outtext2("        ", 108, 0, 3);
-		this.dig.Scores.initscores();
-		this.dig.Drawing.drawlives();
-		this.dig.Sound.music(1);
-		this.dig.Input.readdir();
-		this.dig.time = this.dig.Pc.gethrt();
-		while (!this.gamedat[this.curplayer].dead && !this.gamedat[this.curplayer].levdone && !this.dig.Input.escape) {
+		this.dig.GetInput().keypressed = 0;
+		this.dig.GetDrawing().outtext2("        ", 108, 0, 3);
+		this.dig.GetScores().initscores();
+		this.dig.GetDrawing().drawlives();
+		this.dig.GetSound().music(1);
+		this.dig.GetInput().readdir();
+		this.dig.D().time = this.dig.GetPc().P().gethrt();
+		while (!this.gamedat[this.curplayer].dead && !this.gamedat[this.curplayer].levdone && !this.dig.GetInput().escape) {
 			this.penalty = 0;
-			await this.dig.dodigger();
-			this.dig.Monster.domonsters();
-			this.dig.Bags.dobags();
+			this.dig.D().dodigger();
+			this.dig.GetMonster().domonsters();
+			this.dig.D().Bags.dobags();
 			/*  if (penalty<8)
 				  for (t=(8-penalty)*5;t>0;t--)
 					olddelay(1); */
 			if (this.penalty > 8)
-				this.dig.Monster.incmont(this.penalty - 8);
-			await this.testpause();
+				this.dig.GetMonster().incmont(this.penalty - 8);
+			this.testpause();
 			this.checklevdone();
 		}
-		this.dig.erasedigger();
-		this.dig.Sound.musicoff();
+		this.dig.D().erasedigger();
+		this.dig.GetSound().musicoff();
 		t = 20;
-		while ((this.dig.Bags.getnmovingbags() != 0 || t != 0) && !this.dig.Input.escape) {
+		while ((this.dig.D().Bags.getnmovingbags() != 0 || t != 0) && !this.dig.GetInput().escape) {
 			if (t != 0)
 				t--;
 			this.penalty = 0;
-			this.dig.Bags.dobags();
-			this.dig.dodigger();
-			this.dig.Monster.domonsters();
+			this.dig.D().Bags.dobags();
+			this.dig.D().dodigger();
+			this.dig.GetMonster().domonsters();
 			if (this.penalty < 8)
 				/*    for (t=(8-penalty)*5;t>0;t--)
 						 olddelay(1); */
 				t = 0;
 		}
-		this.dig.Sound.soundstop();
-		this.dig.killfire();
-		this.dig.erasebonus();
-		this.dig.Bags.cleanupbags();
-		this.dig.Drawing.savefield();
-		this.dig.Monster.erasemonsters();
-		this.dig.newframe();		// needed by Java version!!
+		this.dig.GetSound().soundstop();
+		this.dig.D().killfire();
+		this.dig.D().erasebonus();
+		this.dig.D().Bags.cleanupbags();
+		this.dig.GetDrawing().savefield();
+		this.dig.GetMonster().erasemonsters();
+		this.dig.D().newframe();		// needed by Java version!!
 		if (this.gamedat[this.curplayer].levdone)
-			this.dig.Sound.soundlevdone();
-		if (this.dig.countem() == 0) {
+			this.dig.GetSound().soundlevdone();
+		if (this.dig.D().countem() == 0) {
 			this.gamedat[this.curplayer].level++;
 			if (this.gamedat[this.curplayer].level > 1000)
 				this.gamedat[this.curplayer].level = 1000;
@@ -427,9 +431,9 @@ export class Main {
 		}
 		if (this.gamedat[this.curplayer].dead) {
 			this.gamedat[this.curplayer].lives--;
-			this.dig.Drawing.drawlives();
-			if (this.gamedat[this.curplayer].lives == 0 && !this.dig.Input.escape)
-				await this.dig.Scores.endofgame();
+			this.dig.GetDrawing().drawlives();
+			if (this.gamedat[this.curplayer].lives == 0 && !this.dig.GetInput().escape)
+				this.dig.GetScores().endofgame();
 		}
 		if (this.gamedat[this.curplayer].levdone) {
 			this.gamedat[this.curplayer].level++;
@@ -439,7 +443,7 @@ export class Main {
 		}
 	}
 
-	randno(n: number): number {
+	randno(n: i32): i64 {
 		this.randv = this.randv * 0x15a4e35 + 1;
 		return (this.randv & 0x7fffffff) % n;
 	}
@@ -450,12 +454,12 @@ export class Main {
 
 	shownplayers(): void {
 		if (this.nplayers == 1) {
-			this.dig.Drawing.outtext2("ONE", 220, 25, 3);
-			this.dig.Drawing.outtext2(" PLAYER ", 192, 39, 3);
+			this.dig.GetDrawing().outtext2("ONE", 220, 25, 3);
+			this.dig.GetDrawing().outtext2(" PLAYER ", 192, 39, 3);
 		}
 		else {
-			this.dig.Drawing.outtext2("TWO", 220, 25, 3);
-			this.dig.Drawing.outtext2(" PLAYERS", 184, 39, 3);
+			this.dig.GetDrawing().outtext2("TWO", 220, 25, 3);
+			this.dig.GetDrawing().outtext2(" PLAYERS", 184, 39, 3);
 		}
 	}
 
@@ -463,32 +467,32 @@ export class Main {
 		this.nplayers = 3 - this.nplayers;
 	}
 
-	async testpause(): Promise<void> {
-		if (this.dig.Input.akeypressed == 32) { /* Space bar */
-			this.dig.Input.akeypressed = 0;
-			this.dig.Sound.soundpause();
-			this.dig.Sound.sett2val(40);
-			this.dig.Sound.setsoundt2();
+	testpause(): void {
+		if (this.dig.GetInput().akeypressed == 32) { /* Space bar */
+			this.dig.GetInput().akeypressed = 0;
+			this.dig.GetSound().soundpause();
+			this.dig.GetSound().sett2val(40);
+			this.dig.GetSound().setsoundt2();
 			this.cleartopline();
-			this.dig.Drawing.outtext2("PRESS ANY KEY", 80, 0, 1);
-			this.dig.newframe();
-			this.dig.Input.keypressed = 0;
+			this.dig.GetDrawing().outtext2("PRESS ANY KEY", 80, 0, 1);
+			this.dig.D().newframe();
+			this.dig.GetInput().keypressed = 0;
 			while (this.shouldRun) {
-				await Threading.sleep(50);
-				if (this.dig.Input.keypressed != 0)
+				this.factory.Sleep(50);
+				if (this.dig.GetInput().keypressed != 0)
 					break;
 			}
 			this.cleartopline();
-			this.dig.Scores.drawscores();
-			this.dig.Scores.addscore(0);
-			this.dig.Drawing.drawlives();
-			this.dig.newframe();
-			this.dig.time = this.dig.Pc.gethrt() - this.dig.frametime;
+			this.dig.GetScores().drawscores();
+			this.dig.GetScores().addscore(0);
+			this.dig.GetDrawing().drawlives();
+			this.dig.D().newframe();
+			this.dig.D().time = this.dig.GetPc().P().gethrt() - this.dig.D().frametime;
 			//	olddelay(200);
-			this.dig.Input.keypressed = 0;
+			this.dig.GetInput().keypressed = 0;
 		}
 		else
-			this.dig.Sound.soundpauseoff();
+			this.dig.GetSound().soundpauseoff();
 	}
 
 }
