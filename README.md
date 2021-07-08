@@ -1,5 +1,5 @@
 # digger-ts
-Digger Remastered (HTML5 / TypeScript)
+Digger Remastered (TypeScript / HTML5)
 
 ## Screenshots
 ![Screenshot1](/wiki/screenshot1.png?raw=true)
